@@ -85,8 +85,11 @@ private slots:
 
     void on_actionTask_triggered();
 
+    void task();
+
 protected:
     void mouseMoveEvent(QMouseEvent *e);
+    QString getTrLine(const QWebElement &e);
 
 private:
     Ui::MainWindow *ui;

@@ -10,6 +10,10 @@
 
 #include <QNetworkCookie>
 
+#include <QWebElementCollection>
+
+#include <QDate>
+
 MainWindow* MainWindow::owner_  = 0;
 MyCookieJar* MainWindow::mycookie_ = 0;
 
@@ -35,6 +39,10 @@ MainWindow::MainWindow(QWidget *parent) :
     setMouseTracking(true);
     //v_->setStatusBarLable(msgLabel);
     t_->setMouseTracking(true);
+
+    timer_ = new QTimer(this);
+
+    connect(timer_, SIGNAL(timeout()), this, SLOT(task()));
 }
 
 MainWindow::~MainWindow()
@@ -42,7 +50,7 @@ MainWindow::~MainWindow()
     myCookie()->save();
     delete ui;
     delete t_;
-    //delete timer_;
+    delete timer_;
     //delete mycookie_;
     QWebSettings::globalSettings()->clearIconDatabase();
     QWebSettings::globalSettings()->clearMemoryCaches();
@@ -69,6 +77,64 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
     msgLabel->setText("("+QString::number(e->x())+","+QString::number(e->y())+")");
 }
 
+QString MainWindow::getTrLine(QWebElement const& e)
+{
+    QWebElement timed = e.findFirst("p[class=\"time-d\"]");
+    QWebElement timeh = e.findFirst("p[class=\"time-h ft-gray\"]");
+
+    QString line = timed.toPlainText();
+    line += " ";
+    line += timeh.toPlainText();
+    line += ",";
+
+    QWebElement tradeNo = e.findFirst("a[class=\"J-tradeNo-copy J-tradeNo\"]");
+    line += tradeNo.attribute("title", "");
+    line += ",";
+
+    QWebElement name = e.findFirst("p[class=\"name\"]");
+    line += name.toPlainText();//("value", "");
+    line += ",";
+
+    QWebElement amount = e.findFirst("span[class=\"amount-pay-in\"]");
+    line += amount.toPlainText();//("value", "");
+    line += ",";
+
+    QWebElement status = e.findFirst("td[class=\"status\"] > p");
+    line += status.toPlainText();//("value", "");
+
+    return line;
+}
+
+void MainWindow::task()
+{
+    QString filename = QDate::currentDate().toString("yyyy-MM-dd") + ".txt";
+    QFile file;
+    file.setFileName(filename);
+    file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append);
+    QTextStream stream(&file);
+
+    QWebFrame* wf = tabWidget()->currentWebView()->webPage()->mainFrame();
+
+    //QWebElementCollection cs = wf->findAllElements("table[class=\"ui-record-table\"]");
+    //timer_->stop();
+//*
+    //QString fclass = QString("tr[class=\"%1\"]").arg("J-item");
+    QWebElementCollection cs = wf->findAllElements("tbody > tr");
+//*/
+    qDebug() << cs.count() ;
+
+    for(int i = 0; i < cs.count(); ++i)
+    {
+        QString line = getTrLine(cs[i]);
+
+        stream << line << "\n";
+        qDebug() << line ;
+    }
+
+    file.close();
+    timer_->stop();
+}
+
 void MainWindow::on_pushButton_clicked()
 {
     QString url = ui->lineEdit->text();
@@ -79,6 +145,7 @@ void MainWindow::on_pushButton_clicked()
 }
 
 void MainWindow::on_actionTask_triggered()
-{
-    QWebFrame* wf = tabWidget()->currentWebView()->webPage()->mainFrame();
+{    
+    qDebug() << "start timer";
+    timer_->start(100);
 }
