@@ -125,13 +125,21 @@ void MainWindow::task()
 
     for(int i = 0; i < cs.count(); ++i)
     {
-        QString line = getTrLine(cs[i]);
+        QWebElement e = cs[i];
+        QWebElement amount = e.findFirst("span[class=\"amount-pay-in\"]");
+        if(amount.isNull())
+            continue;
+
+        QString line = getTrLine(e);
 
         stream << line << "\n";
         qDebug() << line ;
     }
 
     file.close();
+
+
+
     timer_->stop();
 }
 
@@ -147,5 +155,5 @@ void MainWindow::on_pushButton_clicked()
 void MainWindow::on_actionTask_triggered()
 {    
     qDebug() << "start timer";
-    timer_->start(100);
+    timer_->start(30000);
 }

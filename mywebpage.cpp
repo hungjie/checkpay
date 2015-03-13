@@ -163,7 +163,7 @@ void JsobjectInterface::waitLoadFinished(const QMap<QString, QVariant> &object)
     loadFinishedTimes_ = 1;
     m_emitSignal = object;
 
-    waitLoadFinishTimer_->start(1000);;
+    waitLoadFinishTimer_->start(1000);
 }
 
 void JsobjectInterface::whileMBRoll(const QMap<QString, QVariant> &object)
@@ -1164,8 +1164,8 @@ void WebView::loadFinished(bool ok)
 void WebView::loadUrl(const QUrl &url)
 {
     qDebug() << "loadUrl";
-    //QWebSettings::globalSettings()->clearIconDatabase();
-    //QWebSettings::globalSettings()->clearMemoryCaches();
+    QWebSettings::globalSettings()->clearIconDatabase();
+    QWebSettings::globalSettings()->clearMemoryCaches();
 
     m_initialUrl = url;
 
